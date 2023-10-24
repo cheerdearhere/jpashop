@@ -12,7 +12,8 @@ public class HelloController {
     @GetMapping("/hello")
     public String hello(Model model){
         model.addAttribute("data","hello!!");
-        model.addAttribute(TestResponseCode.RESPONSE01.getCode(),TestResponseCode.RESPONSE01.getMessage());//enum을 사용
+        model.addAttribute("code",TestResponseCode.RESPONSE01.getCode());
+        model.addAttribute("message",TestResponseCode.RESPONSE01.getMessage());//enum을 사용
         return "hello";//  /templates/ + {view name} + .html
     }
 }
