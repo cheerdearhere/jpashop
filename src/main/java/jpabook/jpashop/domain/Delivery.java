@@ -11,7 +11,7 @@ public class Delivery {
     @Column(name="delivery_id")
     private Long id;
 
-    @OneToOne(mappedBy = "delivery") //1:1인경우 조회를 자주하는 객체에서 FK를 지정
+    @OneToOne(mappedBy = "delivery",fetch = FetchType.LAZY) //1:1인경우 조회를 자주하는 객체에서 FK를 지정
     private Order order;
 
     @Embedded

@@ -8,7 +8,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity @Getter @Setter
+@Entity
+@Getter
+@Setter
 public class Category {
     @Id @GeneratedValue
     @Column(name="category_id")
@@ -29,9 +31,17 @@ public class Category {
      */
 
 //  자신 참조(계층형 데이터인 경우)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="parent_id") //id 값 기준
     private Category parent;
+
     @OneToMany(mappedBy = "parent")// parent(상위 객체)
     private List<Category> children = new ArrayList<>();
+
+
+    //==연관관계 메서드==//
+    public void addChildCategory(Category child){
+        this.children.add(child);
+        child.setParent(this);
+    }
 }
