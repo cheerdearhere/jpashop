@@ -100,14 +100,19 @@ ex) Order class
 ## 연관 관계(편입) 메서드
     양방향 연관관계가 있는 엔티티의 속성이 Set될때 관련 데이터도 함께 관리할 연관관계 편입 메서드가 있으면 유용하다. 위치는 주 위치
     자체 참조의 경우에도 연관관계 편입 메서드 적용
-ex) 
-Order class
-    public void setMember(Member member){
-        this.member = member; //일반적인 setter
-        member.getOrders().add(this); // mapped 객체에 추가
-    }
-Category class
-    public void addChildCategory(Category child){
-        this.children.add(child);
-        child.setParent(this);
-    }
+ex)
+    setter+list 추가
+        public void setMember(Member member){
+            this.member = member; 
+            member.getOrders().add(this);
+        }
+    list 추가 후 setter 
+        public void addOrderItem(OrderItem orderItem){
+            orderItems.add(orderItem);
+            orderItem.setOrder(this);
+        }
+    자체 참조(계층형 데이터)
+        public void addChildCategory(Category child){
+            this.children.add(child);
+            child.setParent(this);
+        }
