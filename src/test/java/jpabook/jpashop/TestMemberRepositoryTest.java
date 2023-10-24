@@ -4,13 +4,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
-class MemberRepositoryTest {
-    @Autowired MemberRepository memberRepository;
+class TestMemberRepositoryTest {
+    @Autowired TestMemberRepository testMemberRepository;
 
 //    test용 템플릿으로 만들어서 사용하는 것도 유용
 //    @Test
@@ -27,11 +25,11 @@ class MemberRepositoryTest {
 //    @Rollback(false) // 테스트 코드를 롤백하지 않고 저장하고 싶으면 false로
     public void testMember() throws Exception{
         //given
-        Member member = new Member();
+        TestMember member = new TestMember();
         member.setUserName("memberA");
         //when
-        Long savedId = memberRepository.saveMember(member);
-        Member findMember = memberRepository.findOne(savedId);
+        Long savedId = testMemberRepository.saveMember(member);
+        TestMember findMember = testMemberRepository.findOne(savedId);
         //then
         Assertions.assertThat(findMember.getId()).isEqualTo(member.getId());
         Assertions.assertThat(findMember.getUserName()).isEqualTo(member.getUserName());
