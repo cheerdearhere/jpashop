@@ -4,8 +4,7 @@ import jpabook.jpashop.domain.item.Album;
 import jpabook.jpashop.domain.item.Book;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.domain.item.Movie;
-import jpabook.jpashop.exception.ItemRepository;
-import org.junit.jupiter.api.Assertions;
+import jpabook.jpashop.repository.ItemRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +12,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +24,6 @@ class ItemServiceTest {
     ItemRepository itemRepository;
     @Autowired
     ItemService itemService;
-
     @Test
     @Rollback(false)
     void 새상품저장 (){
