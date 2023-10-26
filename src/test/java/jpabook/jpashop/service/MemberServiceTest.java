@@ -11,13 +11,16 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest // 단위테스트를 넘어 db 연동까지 스프링 전체 포괄 테스트
 @Transactional // 롤백
 class MemberServiceTest {
-//    관련 인젝션
+
+    //    관련 인젝션
     @Autowired MemberService memberService;
     @Autowired MemberRepository memberRepository;
     @Autowired EntityManager em; // persistance 관리할경우 injection
+
     @Test
     //@Rollback(false) //db에서 결과를 볼경우
     void 회원가입() throws Exception{
@@ -30,6 +33,7 @@ class MemberServiceTest {
 //        em.flush();//롤백은 하지만 insert문은 표시
         assertEquals(member, memberRepository.findOne(savedId));
     }
+
     @Test
     void 중복_가입_예외() throws Exception{
         //given
@@ -44,7 +48,5 @@ class MemberServiceTest {
             memberService.join(member2);
         });
     }
-
-//    메모리 DB 사용하기
 
 }
