@@ -211,3 +211,26 @@
     datasource: 메모리에서 자바로 띄움(외부 db와 연계 x)
         url: jdbc:h2:mem:test #memory mode
     Spring boot는 기본 설정없으면 기본으로 메모리모드를 사용해 테스트 가능
+
+# 복잡한 Entity의 경우 생성 메서드를 만드는 것이좋다. ex) order
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems){
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for(OrderItem orderItem : orderItems){
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+# Stream interface 사용
+    public  int getTotalPrice(){
+        //        int totalPrice=0;
+        //        for(OrderItem orderItem: orderItems){
+        //            totalPrice += orderItem.getTotalPrice();
+        //        }
+        //        return totalPrice;
+        return orderItems.stream().mapToInt(OrderItem :: getTotalPrice).sum();
+    }
