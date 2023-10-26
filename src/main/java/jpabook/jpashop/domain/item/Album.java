@@ -3,13 +3,13 @@ package jpabook.jpashop.domain.item;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @DiscriminatorValue("A")
 public class Album extends Item{
-    protected Album(){}
     private String artist;
     private String etc;
 }
