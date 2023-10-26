@@ -135,3 +135,42 @@
         exception : 예외처리
         api : 페이징 외 데이터처리
         controller, service, repository : 일반적 구조
+
+# SQL과 JPQL
+     SQL  : DB의 table에 접근
+    JPQL : SQL과 거의 유사하나 Entity 객체에 대해 접근하는 것이 다름
+        return em.createQuery("select m from Member m",Member.class)
+                .getResultList();
+        return em.createQuery("select m from Member m where m.name = :searchKey",Member.class)
+                .setParameter("searchKey",name)
+                .getResultList();
+
+# @Transactional
+    - JPA에서 DB처리하는 serivce/command는 Transacational처리가 필수
+    - 두가지 어노테이션중 javax보다는 spring 사용 권장
+    - 데이터를 변경하지 않는 경우를 기본으로 readOnly 처리, 쓰는 경우 default인 readOnly false 처리
+    - 각 서비스의 기능에 따라 기능 제한 거는 것도 최적화에 도움 됨(조회 기능은 readOnly) : 리소스 소모를 줄일 수 있음
+    - 검증 로직이 서버단에 있더라도 다중 접속과 처리 상황이 있을 수 있으므로 검증이 필요한 경우 unique 처리 
+
+# bean injection 방법(service, repository)
+    JPA의 @PersistenceContext도 spring boot에서 @Autowired로 처리해줌(버전이 낮을 경우 안될 수 있음에 주의)
+    - Autowired : 변경이 쉽지 않아 유연한 테스트가 어려움
+        @Autowired
+        private MemberRepository memberRepository;
+    - setter : 주입의 변경이 간단함, 운영환경에서 setter로 인해 보안 이슈가 생길 수 있음
+        private MemberRepository memberRepository;
+        @Autowired
+        public void setMemberRepository(MemberRepository memberRepository){
+            this.memberRepository = memberRepository;
+        }
+    - constructor(권장) : 여전히 보안상의 이슈가 있을 수 있으나 최초의 생성 이후의 개입을 막을 수 있음
+        Spring 최신 버전에서는 생성자가 하나인 경우에는 @Autowired를 하지 않아도 자동 처리됨
+        private final MemberRepository memberRepository;
+        @Autowired
+        public MemberService (MemberRepository memberRepository){
+            this.memberRepository = memberRepository;
+        }
+    - Lombok의 어노테이션 사용(constructor 자동화)
+            private final MemberRepository memberRepository; 선언 후 
+        @AllArgsConstructor : 모든 속성에 대한 생성자
+        @RequiredArgsConstructor(권장) : final로 선언된 필 수 생성자
