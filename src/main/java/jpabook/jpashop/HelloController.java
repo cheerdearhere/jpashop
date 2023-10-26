@@ -1,6 +1,6 @@
 package jpabook.jpashop;
 
-import jpabook.jpashop.domain.TestResponseCode;
+import jpabook.jpashop.exception.TestResponseCode;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
