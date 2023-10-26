@@ -97,6 +97,9 @@
     ex) Order class
         @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
         private List<OrderItem> orderItems = new ArrayList<>();
+        //주문 저장
+        orderRepository.save(order);// cascade를 했기 대문에 따로 persist를 할 필요가 없다.
+        //만약 order가 다른 곳에서 다른 용도로 사용된다면 cascade를 하지말고 각각 따로 작성
 ## 연관 관계(편입) 메서드
     양방향 연관관계가 있는 엔티티의 속성이 Set될때 관련 데이터도 함께 관리할 연관관계 편입 메서드가 있으면 유용하다. 위치는 주 위치
     자체 참조의 경우에도 연관관계 편입 메서드 적용
@@ -234,3 +237,32 @@
         //        return totalPrice;
         return orderItems.stream().mapToInt(OrderItem :: getTotalPrice).sum();
     }
+
+# 함부로 생성자를 만들어 set방식을 불규칙하게 하지 못하게 하려면 default constructor를 protected로 선언 
+    생성 메서드를 따로 만든 뒤 
+
+    protected Order(){}
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)로도 사용가능
+
+# JPA의 강점: 로직이 바뀌면 다른 데이터들의 유지보수가 편리해진다
+    /**
+     * 이전에 작업해 놓은 경우 편리
+     * @param orderId
+     */
+    @Transactional
+    public void cancelOrder(Long orderId){
+        Order order = orderRepository.findOne(orderId);
+        order.orderCancel();
+    }
+    따로 변경 내역을 다시 적용, 지정할 필요가 없음(dirty check)
+
+# Entity를 다루는 두가지 패턴: 
+    양립 가능.
+    둘중 해당 서비스에 알맞는 것 선택
+### domain model pattern: 
+    핵심 비즈니스 로직을 가능한 해당 엔티티에 몰아 넣는 것. 자동화가 장점
+    ex) Order
+### transactional script pattern:
+    기존 방식. Entity에는 비즈니스 로직이 거의 없고 서비스 계층에서 대부분의 비즈니스 로직을 처리하는 것. 개별 처리가 강점
+
+# 일반적인 단위테스트때는 @SpringBootTest없이 사용이 좋음
