@@ -38,23 +38,23 @@
     emutable하게 만드는 것이 좋으므로 Setter없이 하는 것을 권장. 
     단 refresh, proxy를 사용하는 경우를 위해 기본 constructor를 protected로 사용(물론 public도 가능)
     
-ex) Address class
-    @Embeddable 
-    @Getter //Setter없이 사용
-    public class Address {
-        private String city;
-        private String street;
-        private String zipcode;
-        //JPA에서 refresh나 proxy로 사용할 수 있으므로 기본생성자는 있으면 좋음. 단, protected로 보안성을 높이는 것도 좋음
-        protected Address(){}
-        //특정 생성자가 필요한 경우 기본생성자를 protected로 선언한 뒤 지정하는 것을 권장
-        //사용되는 용도와 데이터를 체크할 수 있어 유용
-        public Address(String city,String street,String zipcode){
-            this.city = city;
-            this.street = street;
-            this.zipcode = zipcode;
+    ex) Address class
+        @Embeddable 
+        @Getter //Setter없이 사용
+        public class Address {
+            private String city;
+            private String street;
+            private String zipcode;
+            //JPA에서 refresh나 proxy로 사용할 수 있으므로 기본생성자는 있으면 좋음. 단, protected로 보안성을 높이는 것도 좋음
+            protected Address(){}
+            //특정 생성자가 필요한 경우 기본생성자를 protected로 선언한 뒤 지정하는 것을 권장
+            //사용되는 용도와 데이터를 체크할 수 있어 유용
+            public Address(String city,String street,String zipcode){
+                this.city = city;
+                this.street = street;
+                this.zipcode = zipcode;
+            }
         }
-    }
 
 # 엔티티 설계시 주의사항
 
@@ -70,12 +70,12 @@ ex) Address class
         - fetch join(일반적)
     x:many는 LAZY가 default
     @...ToOne(x:1)관계는 default가 EAGER이므로 직접 LAZY로 지정
-ex)     @ManyToOne(fetch = FetchType.LAZY)
+    ex)     @ManyToOne(fetch = FetchType.LAZY)
 ## 컬렉션은 필드에서 초기화
     리터럴이나 참조 데이터를 갖는 Collection의 경우 필드에서 바로 초기화하는 것이 안전하다. 
     하이버네이트가 영속성을 지정할때 컬렉션을 한번 감싸기때문에 객체가 달라진다. 
     컬렉션은 특히 하이버네이트가 지정해놓고 쓰므로 중간에 변경하지 않는다.
-ex)
+    ex)
     class java.util.ArrayList > class org.hibernate.collection.internal.PersistentBag
 ## 테이블, 컬럼명 생성 전략
     spring boot default: implicitNamingStrategy(camelCase를 snake_case로 변경)
@@ -94,25 +94,44 @@ ex)
         persist(order)
     casecade를 ALL로 한경우 한번에 하위 엔터티도 적용
         persist(order)
-ex) Order class
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    ex) Order class
+        @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+        private List<OrderItem> orderItems = new ArrayList<>();
 ## 연관 관계(편입) 메서드
     양방향 연관관계가 있는 엔티티의 속성이 Set될때 관련 데이터도 함께 관리할 연관관계 편입 메서드가 있으면 유용하다. 위치는 주 위치
     자체 참조의 경우에도 연관관계 편입 메서드 적용
-ex)
-    setter+list 추가
-        public void setMember(Member member){
-            this.member = member; 
-            member.getOrders().add(this);
-        }
-    list 추가 후 setter 
-        public void addOrderItem(OrderItem orderItem){
-            orderItems.add(orderItem);
-            orderItem.setOrder(this);
-        }
-    자체 참조(계층형 데이터)
-        public void addChildCategory(Category child){
-            this.children.add(child);
-            child.setParent(this);
-        }
+    ex)
+        setter+list 추가
+            public void setMember(Member member){
+                this.member = member; 
+                member.getOrders().add(this);
+            }
+        list 추가 후 setter 
+            public void addOrderItem(OrderItem orderItem){
+                orderItems.add(orderItem);
+                orderItem.setOrder(this);
+            }
+        자체 참조(계층형 데이터)
+            public void addChildCategory(Category child){
+                this.children.add(child);
+                child.setParent(this);
+            }
+
+# 학습을 위해 복잡한 기능 제외(필수)
+    - 로그인과 권한 관리 제외
+    - 파라미터 검증과 예외처리 단순화
+    - 상품은 도서만 진행
+    - 카테고리 사용 x
+    - 배송 정보 사용x
+    - 서비스, 레포지토리 계층 개발 > 테스트케이스 작성 > 웹 계층 적용
+
+# 학습을 위한 아키텍처
+    controller > service > repository > db
+                > domain <
+
+# 구조
+    jpabook.jpashop
+        domain : 엔티티가 모여있는 계층으로 모든 계층에서 사용
+        exception : 예외처리
+        api : 페이징 외 데이터처리
+        controller, service, repository : 일반적 구조
