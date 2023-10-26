@@ -1,0 +1,26 @@
+# 테스트용 설정파일
+#server:
+#  port: 8181
+#
+#
+## Spring boot learn?? ????? :https://spring.io/
+#spring:
+##     ?? hikari? ???? ??? default? ???
+#  datasource:
+#    url: jdbc:h2:mem:test #memory mode
+#    username: sa
+#    password:
+#    driver-class-name: org.h2.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: create # jpa? ?? ?? ??
+#    properties:
+#      hibernate:
+##        show_sql: true # ??? sql ??? ??(log? ???? ?? ??)
+#        format_sql: true # sql? ??
+
+logging:
+  level:
+    org.hibernate:
+      sql: debug # ?? ?? ??
+      type: trace # parameter ?? ??

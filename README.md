@@ -174,3 +174,40 @@
             private final MemberRepository memberRepository; 선언 후 
         @AllArgsConstructor : 모든 속성에 대한 생성자
         @RequiredArgsConstructor(권장) : final로 선언된 필 수 생성자
+
+# Test 코드 작성
+    - @Transactional로 롤백을 기본으로 하게 하고 필요한 경우 다음을 사용
+        @Rollback(false) //db에서 결과를 볼경우
+        entityManager.flush();//롤백은 하지만 insert문은 표시
+    - 에러 발생시 테스트
+            @Test
+            void 중복_가입_예외() throws Exception{
+                //given
+                Member member1 = new Member();
+                member1.setName("kim");
+                Member member2 = new Member();
+                member2.setName("kim");
+                //when
+                memberService.join(member1);
+                try{
+                    memberService.join(member2); //예외가 나와야 함
+                }
+                //then
+                catch(IllegalStateException ie){
+                    return;
+                }
+        
+                fail("중복 검증 예외가 발생하지 않음");
+            }
+    - 예외 테스트에서 try-catch 대체하기: Junit 버전에 따라 다름
+        junit4 : 
+            @Test(expected = IllegalStateException.class)
+        junit5 : 
+            Assertions.assertThrows(IllegalStateException.class, ()->{
+                memberService.join(member2);
+            });
+# 메모리 database 사용하기
+    test 폴더에 reseources 작성, yml파일 생성
+    datasource: 메모리에서 자바로 띄움(외부 db와 연계 x)
+        url: jdbc:h2:mem:test #memory mode
+    Spring boot는 기본 설정없으면 기본으로 메모리모드를 사용해 테스트 가능
