@@ -388,4 +388,9 @@
     여러 단계를 거치는 경우 InvalidDataAccessApiUsageException.class가 custom exception을 대체할 수 있어 RuntimeException으로 걸음
     도메인 모델 패턴의 장점은 핵심 메서드가 모여있는 entity를 테스트 할 수 있다는 장점
 
+# System.out.println 말고 logger 쓰기
+    Logger log = LoggerFactory.getLogger(getClass());로 지정하거나
+    @Slf4j로 표시해서
+    
+    log.info/debug/error/trace... 등등 사용
 
