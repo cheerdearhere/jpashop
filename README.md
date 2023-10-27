@@ -148,6 +148,124 @@
                 .setParameter("searchKey",name)
                 .getResultList();
 
+# JPA에서 Join 하기
+    마찬가지로 Entity로 조인(left, right 등은 SQL과 동일)
+    ex) order + 그 주문과 관련된 member 조인
+    public List<Order> findAll(OrderSearch orderSearch){
+        return em.createQuery("select o from Order o join o.member m", Order.class)
+                .getResultList();
+    }
+
+# JPA에서 페이징 처리
+    - param을 담을 Object를 생성(Entity)
+    - createQuery할때 인수로 입력
+    필수값이 반드시 넘어오는 경우는 편리함
+        ex) 값이 반드시 있는 경우
+       public List<Order> findAll(OrderSearch orderSearch){
+        // order + 그 주문과 관련된 member 조인
+        return em.createQuery("select o from Order o join o.member m"+
+                        " where o.status = :status "+ //동적으로 쿼리를 추가하는 경우
+                        " and m.name like :name", Order.class)
+                .setParameter("status",orderSearch.getOrderStatus())//동적쿼리에 파라미터 바인딩
+                .setParameter("name",orderSearch.getMemberName())
+                .setFirstResult(100)//paging할 때 처음 표시할 rowNum
+                .setMaxResults(1000)//최대 호출 데이터 수
+                .getResultList();
+        }
+
+# JPA에서 동적쿼리는 어떻게 수행할 것인가
+    권장: QueryDsl 사용
+### 1. 문자열로 직접 조건 추가  - 복잡, 어려움, 에러가 발생할 가능성이 곳곳에 있음
+    public List<Order> findAllByStr(OrderSearch orderSearch){
+        StringBuilder jpqlBuilder = new StringBuilder("select o from Order o join o.member m");
+        boolean isFirstCondition = true;
+
+        //주문 상태
+        if(orderSearch.getOrderStatus() != null){
+            if(isFirstCondition){
+                jpqlBuilder.append(" where");
+                isFirstCondition = false;
+            }else{
+                jpqlBuilder.append(" and");
+            }
+            jpqlBuilder.append(" o.status = :status");
+        }
+
+        //회원 이름
+        if(StringUtils.hasText(orderSearch.getMemberName())){
+            if(isFirstCondition){
+                jpqlBuilder.append(" where");
+                isFirstCondition = false;
+            }else{
+                jpqlBuilder.append(" and");
+            }
+            jpqlBuilder.append(" m.name like :name");
+        }
+
+        //parameter binding
+        TypedQuery<Order> query = em.createQuery(jpqlBuilder.toString(), Order.class)
+                .setMaxResults(1000);
+        if(orderSearch.getOrderStatus() != null){
+            query = query.setParameter("status",orderSearch.getOrderStatus());
+        }
+        if(StringUtils.hasText(orderSearch.getMemberName())){
+            query = query.setParameter("name",orderSearch.getMemberName());
+        }
+
+        return query.getResultList();
+    }
+### 2. JPA Criteria(JPA가 제공하는 동적쿼리용 표준라이브러리) - 쿼리를 연상하기 어려워 유지보수가 어려움 => 운영x
+    public List<Order> findAllByCriteria(OrderSearch orderSearch){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Order> cq = cb.createQuery(Order.class);
+        Root<Order> o = cq.from(Order.class);
+        Join<Object,Object> m = o.join("member", JoinType.INNER);
+
+        List<Predicate> criteria = new ArrayList<>();
+        //주문상태
+        if(orderSearch.getOrderStatus() != null){
+            Predicate status = cb.equal(o.get("status"),orderSearch.getOrderStatus());//조건절 =
+            criteria.add(status);
+        }
+        //회원이름 검색
+        if(StringUtils.hasText(orderSearch.getMemberName())){
+            Predicate name = cb.like(m.<String>get("name"),"%"+orderSearch.getMemberName()+"%");
+            criteria.add(name);
+        }
+        //쿼리에 붙임
+        cq.where(cb.and(criteria.toArray(new Predicate[criteria.size()])));
+        //마지막 조건
+        TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000);
+        //데이터 조형
+        return query.getResultList();
+    }
+### 3.(권장)QueryDsl 처리 : 왠만한 복잡한 내용은 QueryDsl 권장
+    public List<Order> findAll(OrderSearch orderSearch){//queryDsl 사용
+        QOrder order = QOrder.order;
+        QMemger member = QMember.member;
+
+        return query
+                .select(order)
+                .from(order)
+                .join(order.member, member)
+                .where(statusEq(orderSearch.getOrderStatus()),
+                        nameLike(orderSearch.getMemberName()))
+                .limit(1000)
+                .fetch();
+    }
+    private BooleanExpression statusEq(OrderStatus statusCond){
+        if(statusCond == null){
+            return null;
+        }
+        return order.status.eq(statusCond);
+    }
+    private BooleanExpression nameLike (String nameCond){
+        if(!StringUtils.hasText(nameCond)){
+            return null;
+        }
+        return order.name.like(nameCond);
+    }
+
 # @Transactional
     - JPA에서 DB처리하는 serivce/command는 Transacational처리가 필수
     - 두가지 어노테이션중 javax보다는 spring 사용 권장
@@ -269,3 +387,5 @@
     단위테스트에서 스프링 서버와 db까지 태우는 것은 낭비가 클수 있음
     여러 단계를 거치는 경우 InvalidDataAccessApiUsageException.class가 custom exception을 대체할 수 있어 RuntimeException으로 걸음
     도메인 모델 패턴의 장점은 핵심 메서드가 모여있는 entity를 테스트 할 수 있다는 장점
+
+
