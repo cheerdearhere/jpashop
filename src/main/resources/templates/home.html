@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!--use thymeleaf-->
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- jsp include나 tiles와 유사: fragments 추가-->
+<head th:replace="fragments/header">
+<!-- set page contents  -->
+    <title>home</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+
+<div class="container">
+    <div th:replace="fragments/bodyHeader"></div>
+    <div class="jumbotron">
+        <div class="menu_title text-center">
+            <h1>Hello JShop</h1>
+        </div>
+        <div class="menu_body">
+            <p class="lead">회원 기능</p>
+            <p>
+                <a class="btn btn-lg btn-secondary" href="/members/new">회원 등록</a>
+                <a class="btn btn-lg btn-secondary" href="/members">회원 목록</a>
+            </p>
+        </div>
+        <div class="menu_body">
+            <p class="lead">상품 기능</p>
+            <p>
+                <a class="btn btn-lg btn-dark" href="/items/new">상품 등록</a>
+                <a class="btn btn-lg btn-dark" href="/items">상품 목록</a>
+            </p>
+        </div>
+        <div class="menu_body">
+            <p class="lead">주문 기능</p>
+            <p>
+                <a class="btn btn-lg btn-info" href="/order/new">상품 주문</a>
+                <a class="btn btn-lg btn-info" href="/order">주문 목록</a>
+            </p>
+        </div>
+    </div>
+    <div th:replace="fragments/footer"></div>
+</div>
+<script ></script>
+</body>
+</html>
