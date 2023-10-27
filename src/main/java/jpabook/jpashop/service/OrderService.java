@@ -8,6 +8,8 @@ import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.ItemRepository;
 import jpabook.jpashop.repository.MemberRepository;
 import jpabook.jpashop.repository.OrderRepository;
+//import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.OrderSearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,9 +69,10 @@ public class OrderService {
     public Order getOrder(Long orderId){
         return orderRepository.findOne(orderId);
     }
-// 임시
-//    public List<Order> findOrders(OrderSearch orderSearch){
-//        return orderRepository.findAll(orderSearch);
-//    }
+
+    public List<Order> findOrders(OrderSearch orderSearch){
+        return orderRepository.findAllByCriteria(orderSearch);
+//        return orderRepository.findAllByQuertDsl(orderSearch);// query dsl 처리 후 사용
+    }
 
 }
