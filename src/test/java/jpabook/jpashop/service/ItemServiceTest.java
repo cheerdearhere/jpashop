@@ -4,6 +4,7 @@ import jpabook.jpashop.domain.item.Album;
 import jpabook.jpashop.domain.item.Book;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.domain.item.Movie;
+import jpabook.jpashop.exception.NotEnoughStockException;
 import jpabook.jpashop.repository.ItemRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ class ItemServiceTest {
     ItemRepository itemRepository;
     @Autowired
     ItemService itemService;
+
     @Test
     @Rollback(false)
     void 새상품저장 (){
@@ -82,12 +84,9 @@ class ItemServiceTest {
     @Test
     void 상품이름조회(){
         //given
-        Item book = new Book();
-        book.setName("book");
-        Item album = new Album();
-        album.setName("album");
-        Item movie = new Movie();
-        movie.setName("movie");
+        Item book = createItem("book",3000,20,0);
+        Item album = createItem("album",2000,14,1);
+        Item movie = createItem("movie",2300,2,2);
         List<Item> itemList = new ArrayList<>();
         itemList.add(book);
         itemList.add(album);
@@ -98,5 +97,37 @@ class ItemServiceTest {
         //then
         assertEquals(itemRepository.findOne(itemList.get(0).getId()),itemRepository.findByName("book").get(0));
         assertNotEquals(itemRepository.findOne(itemList.get(0).getId()),itemRepository.findByName("album").get(0));
+    }
+    @Test
+    void 재고감소(){
+        //given
+        int totalStock = 10;
+        Item book = createItem("check",3000, totalStock, 0);
+        //when
+        int stock = 2;
+        int overStock = 11;
+        book.removeStock(stock);
+        //then
+        assertEquals(totalStock-stock, book.getStockQuantity(), "재고 감소 처리");
+        assertThrows(NotEnoughStockException.class,()->{
+            book.removeStock(overStock);
+        },"재고를 초과한 수량 요청이 처리됨");
+    }
+
+    private Item createItem(String name, int price, int stockQuantity,int type){
+        Item item;
+        if(type == 0){
+            item = new Book();
+        }else if( type == 1){
+            item = new Album();
+        }else if( type == 2){
+            item = new Movie();
+        }else{
+            throw new IllegalStateException();
+        }
+        item.setName(name);
+        item.setPrice(price);
+        item.setStockQuantity(stockQuantity);
+        return item;
     }
 }

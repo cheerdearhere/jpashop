@@ -265,4 +265,7 @@
 ### transactional script pattern:
     기존 방식. Entity에는 비즈니스 로직이 거의 없고 서비스 계층에서 대부분의 비즈니스 로직을 처리하는 것. 개별 처리가 강점
 
-# 일반적인 단위테스트때는 @SpringBootTest없이 사용이 좋음
+# 일반적인 단위테스트때는 @SpringBootTest 없이 사용이 좋음
+    단위테스트에서 스프링 서버와 db까지 태우는 것은 낭비가 클수 있음
+    여러 단계를 거치는 경우 InvalidDataAccessApiUsageException.class가 custom exception을 대체할 수 있어 RuntimeException으로 걸음
+    도메인 모델 패턴의 장점은 핵심 메서드가 모여있는 entity를 테스트 할 수 있다는 장점
