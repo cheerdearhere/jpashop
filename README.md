@@ -394,3 +394,16 @@
     
     log.info/debug/error/trace... 등등 사용
 
+# thymeleaf 
+    th:replace  : jsp의 include
+        <div th:replace="fragments/footer"></div>
+    ${}         : el문
+    *{}         : feild의 name(dto와 form의 바인딩처리)
+    th:object   : dto 바인딩
+    th:class    : class 동적 처리 
+        th:class="${#fields.hasErrors('name')}
+            ? 'form-control fieldError'
+            :'form-control'"
+    th:if       : 조건문 처리
+    th:errors   : field의 error감지
+        th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
