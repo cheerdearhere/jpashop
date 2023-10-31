@@ -409,8 +409,11 @@
         th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
     th:each     : enhancedFor문과 같은 방식
          th:each="member:${members}
-    th:href     : url
-        <a href="#" th:href="@{/items/{id}/edit (id=${item.id})}" ...
+    th:href     : 
+        url 이동
+            href="#" th:href="@{/items/{id}/edit (id=${item.id})}" ...
+        javascript 실행
+            href="#" th:href="'javascript:cancel('+${item.id}+')'"
 # thymeleaf와 스프링 에러 처리 : validation
     - Spring boot 2.3 이후부터는 직접 의존성 주입 필요
     implementation 'org.springframework.boot:spring-boot-starter-validation'
