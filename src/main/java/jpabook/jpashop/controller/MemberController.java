@@ -11,12 +11,14 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/members")
 public class MemberController {
     private final MemberService memberService;
 
@@ -24,7 +26,7 @@ public class MemberController {
      * 회원가입 화면 표시
      * @param model
      */
-    @GetMapping("/members/new")
+    @GetMapping("/new")
     public String createForm(Model model){
         model.addAttribute("memberForm",new MemberForm());
         return "members/createMemberForm";
@@ -38,7 +40,7 @@ public class MemberController {
      *  성공: 첫화면 이동
      *  실패: 실패 사유 표시
      */
-    @PostMapping("/members/new")
+    @PostMapping("/new")
     public String addUser(@Valid MemberForm memberForm, BindingResult result){
 
         if (result.hasErrors()){
@@ -56,7 +58,7 @@ public class MemberController {
         return "redirect:/";
     }
 
-    @GetMapping("/members")
+    @GetMapping("")
     public String memberList(Model model){
 //        가능하면 Entity를 그대로 화면으로 보내지 말것.
         List<Member> members = memberService.findMemebers();
