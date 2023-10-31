@@ -407,3 +407,9 @@
     th:if       : 조건문 처리
     th:errors   : field의 error감지
         th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
+
+# thymeleaf와 스프링 에러 처리 : validation
+    - Spring boot 2.3 이후부터는 직접 의존성 주입 필요
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    - @Valid 파라미터, @NotEmpty(message="") VO의 property 지정
+    에러화면을 다시 작성하지 않고 타임리프가 적용하는 에러화면을 표시
