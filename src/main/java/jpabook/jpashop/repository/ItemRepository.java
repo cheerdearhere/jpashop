@@ -20,9 +20,9 @@ public class ItemRepository {
         if(item.getId()==null){
             //id가 없는 경우 = 영속성이 없음 = 저장안됨 = 새로운 대상 추가
             em.persist(item);
-        } else{
+        } else{ //준영속 상태의 entity를 영속 상태로 변경
             //id가 있는 경우 데이터 병합
-            em.merge(item);
+            em.merge(item);// 실무에서는 권장 안함
         }
     }
     public void saveItems(List<Item> itemList){
