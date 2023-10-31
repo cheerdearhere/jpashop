@@ -409,8 +409,11 @@
         th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
     th:each     : enhancedFor문과 같은 방식
          th:each="member:${members}
-    th:href     : url
-        <a href="#" th:href="@{/items/{id}/edit (id=${item.id})}" ...
+    th:href     : 
+        url 이동
+            href="#" th:href="@{/items/{id}/edit (id=${item.id})}" ...
+        javascript 실행
+            href="#" th:href="'javascript:cancel('+${item.id}+')'"
 # thymeleaf와 스프링 에러 처리 : validation
     - Spring boot 2.3 이후부터는 직접 의존성 주입 필요
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -422,3 +425,116 @@
     최대한 서로 오염되지 않도록 따로 작성하는 것을 권장한다. 
     화면에서 받는 경우, 비즈니스 로직을 처리하는 경우, 화면에 보내는 경우를 구별하는 것이 좋다. 
     특히 API를 개발할때는 절대 Entity를 반환해서는 안된다. 
+
+# 중요!! JPA에서 수정처리하기(변경 감지와 병합)
+    - id값이 조작될 수 있으므로 이에대한 보안 준비도 필요함
+    - 습관적으로 merge를 하는데 JPA 표준은 변경감지하도록하는 것 권장
+    영속 entity: setter만 처리해도 변경을 감지해 저장
+    ex) order cancel() method
+        //기존 객체
+        Book book = em.find(Book.class,1L);
+        //in transaction
+        book.setName("newName");
+        //dirty checking : 변경 감지
+        // tx commit
+        별도로 update 로직을 짜지 않고 변경을 감지해서 저장하도록 함
+    준영속 entity : 더이상 EntityManager가 관리하지 않는 데이터 
+        = db를 다녀와서 이미 식별자(id: primary key)를 가지고 있는 데이터
+        ex) 상품 정보 변경때 사용하는 book 
+### 준영속 entity에 영속성을 입히는 방법
+    1. merge 사용하기: 준영속 상태의 entity를 영속 상태로 변경
+        a. 준영속상태의 entity에서 식별자(id)를 받아 1차 캐시에서 entity를 조회
+            a-1. 1차 캐시에 해당 id의 entity가 없으면 db에서 조회해 1차 캐시에 저장
+        b. 조회된 entity에 준영속 상태의 entity의 모든 properties 값을 set.
+        c. update된 1차 캐시의 entity를 반환함
+    ex) Item mergedItem = em.merge(item);
+    mergedItem은 영속성 엔티티, item은 여전히 준영속 엔티티
+    프로세스 로직은 아래 코드라고 생각하면됨. 사실상 변경감지와 같음. 필요없는 데이터도 다 업데이트해야함.
+    @Transactional
+    public Item updateItem(Long itemId, Book bookParam){ 
+        Item foundItem = itemRepository.findOne(itemId); 
+        if(foundItem.getType==="B") Book foundBook = (Book)foundItem;
+        foundItem.setId(bookParam.getId()); 
+        foundItem.setName(bookParam.getName());
+        foundItem.setPrice(bookParam.getPrice());
+        foundItem.setStockQuantity(bookParam.getStockQuantity());
+        foundBook.setAuthor(bookParam.getAuthor());
+        foundBook.setIsbn(bookParam.getIsbn());
+        return foundItem;
+    }
+
+    2. 변경감지 처리하기: 영속성을 지닌 entity를 호출해 데이터를 입력
+    @Transactional
+    public void updateItem(Long itemId, Book bookParam){ //parameter로 넘어온 준영속 상태의 entity
+        Item foundItem = itemRepository.findOne(itemId); //같은 id를 지닌 영속성 entity 조회
+        //        if(foundItem.getType==="B") //실제에서는 타입 분류...
+        Book foundBook = (Book)foundItem;
+        foundItem.setId(bookParam.getId()); //데이터 수정 > 변경 감지 > 데이터 저장됨
+        foundItem.setName(bookParam.getName());
+        foundItem.setPrice(bookParam.getPrice());
+        foundItem.setStockQuantity(bookParam.getStockQuantity());
+        foundBook.setAuthor(bookParam.getAuthor());
+        foundBook.setIsbn(bookParam.getIsbn());
+    }
+### 왜 병합(merge)이 아닌 변경감지인가?
+    물론 merge가 더 편하다. 하지만 병합되는 필드중 값이 없는 필드는 null로 처리된다. 
+    원하는 속성만 선택해서 변경할 수 있는 변경감지 방식과 달리 
+    모든 필드를 업데이트 시켜야만하는 병합(merge)은 데이터의 소실을 야기할 수 있으므로 주의해야한다.
+    개발자의 실수로 필드가 누락되면 데이터 소실이 발생생할 수 있어 위험하다.
+    추가적으로 설정할 수 있으나 가독성, 안정성을 고민하면 merge보다는 변경감지가 권장된다. 
+
+### set을 사용하기보다는 변경감지를 처리할 method를 만들어 추적하도록 하는 것이 권장된다. 
+    setter를 쓰기보다 의미있는 method를 만들어 가능한 추적이 쉽도록만드는 것을 권장
+    @Transactional
+    public void updateItem(Long itemId, Book bookParam){ //parameter로 넘어온 준영속 상태의 entity
+        Book persistBook =  changeItemProperties(itemId, bookParam);
+    }
+    /**
+     * 준영속 엔티티에 영속성 추가해서 리턴
+     */
+    private Book changeItemProperties(Long itemId, Book bookParam) {
+        Item foundItem = itemRepository.findOne(itemId); //같은 id를 지닌 영속성 entity 조회
+        //        if(foundItem.getType==="B")
+        Book foundBook = (Book)foundItem;
+        foundItem.setId(bookParam.getId());
+        foundItem.setName(bookParam.getName());
+        foundItem.setPrice(bookParam.getPrice());
+        foundItem.setStockQuantity(bookParam.getStockQuantity());
+        foundBook.setAuthor(bookParam.getAuthor());
+        foundBook.setIsbn(bookParam.getIsbn());
+        return foundBook;
+    }
+
+# 데이터를 처리할때 주의사항
+    - entity 변경시에는 항상 변경감지 사용
+    - 컨트롤러에서는 어설프게 엔티티를 생성하지 말기()
+    - 트랜잭션이 있는 서비스 계층에 식별자와 변경할 데이터를 명확하게 전달하기(id, dto 구분)
+    - 트랜잭션이 있는 서비스 계층에서 영속 상태의 엔티티를 조회하고 그 엔티티의 데이터를 직접 변경
+    - 트랜잭션의 커밋 실행지점에서 데이터의 변경감지가 실행되어 저장됨.
+
+### Controller
+        @PostMapping("/{itemId}/edit")
+    public String editItem(@PathVariable("itemId") Long itemId, @ModelAttribute("form") BookForm form){
+    //  Book book = new Book(); ... 중략 ... 어설프게 컨트롤러에서 데이터 객체 만들지 말고
+        itemService.updateItem(itemId, form);//그냥 form 객체를 @Transaction service로 넘기기
+        //별도로 update 로직을 짜지 않고 변경을 감지해서 저장하도록 함
+        return "redirect:/items";
+    }
+### Service
+    @Transactional  
+    public void updateItem(Long itemId, BookForm bookParam){
+        //변경감지를 통핸 데이터 변경을 명시한 method(setter 사용 x)
+        Book persistBook =  changeItemProperties(itemId, bookParam.getName(), bookParam.getPrice(),bookParam.getStockQuantity(),bookParam.getAuthor(),bookParam.getIsbn());
+    }
+    private Book changeItemProperties(Long itemId, String name, int price, int stockQuantity, String author, String isbn) {
+        Item foundItem = itemRepository.findOne(itemId); //같은 id를 지닌 영속성 entity 조회
+        // entity의 데이터를 직접 변경
+        foundItem.setName(name);
+        foundItem.setPrice(price);
+        ... 중략 ...
+        return foundBook;
+    }
+
+    + 너무 parameter가 많으면 그 용도의 DTO를 사용하면 됨
+    @Getter @Setter
+    class UpdateItemDto ... 

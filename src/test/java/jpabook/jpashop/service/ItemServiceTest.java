@@ -1,5 +1,6 @@
 package jpabook.jpashop.service;
 
+import jakarta.persistence.EntityManager;
 import jpabook.jpashop.domain.item.Album;
 import jpabook.jpashop.domain.item.Book;
 import jpabook.jpashop.domain.item.Item;
@@ -112,6 +113,18 @@ class ItemServiceTest {
         assertThrows(NotEnoughStockException.class,()->{
             book.removeStock(overStock);
         },"재고를 초과한 수량 요청이 처리됨");
+    }
+    @Autowired
+    EntityManager em;
+    @Test
+    void 변경감지예시(){
+        //기존 객체
+        Book book = em.find(Book.class,1L);
+        //in transaction
+        book.setName("newName");
+        //dirty checking : 변경 감지
+        // tx commit
+
     }
 
     private Item createItem(String name, int price, int stockQuantity,int type){
