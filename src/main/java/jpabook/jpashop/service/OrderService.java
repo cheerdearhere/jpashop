@@ -71,6 +71,7 @@ public class OrderService {
     }
 
     public List<Order> findOrders(OrderSearch orderSearch){
+
         return orderRepository.findAllByCriteria(orderSearch);
 //        return orderRepository.findAllByQuertDsl(orderSearch);// query dsl 처리 후 사용
     }
