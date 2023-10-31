@@ -407,9 +407,17 @@
     th:if       : 조건문 처리
     th:errors   : field의 error감지
         th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
+    th:each     : enhancedFor문과 같은 방식
+         th:each="member:${members}
 
 # thymeleaf와 스프링 에러 처리 : validation
     - Spring boot 2.3 이후부터는 직접 의존성 주입 필요
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     - @Valid 파라미터, @NotEmpty(message="") VO의 property 지정
     에러화면을 다시 작성하지 않고 타임리프가 적용하는 에러화면을 표시
+
+# Entity와 DTO 구별..
+    view를 처리할 Object와 핵심 비지니스 로직은 구별할 필요가 있다.
+    최대한 서로 오염되지 않도록 따로 작성하는 것을 권장한다. 
+    화면에서 받는 경우, 비즈니스 로직을 처리하는 경우, 화면에 보내는 경우를 구별하는 것이 좋다. 
+    특히 API를 개발할때는 절대 Entity를 반환해서는 안된다. 
