@@ -1,6 +1,6 @@
 package jpabook.jpashop;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
+//import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jpabook.jpashop.domain.item.Book;
 import org.junit.jupiter.api.DisplayName;
