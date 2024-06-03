@@ -1,44 +1,48 @@
 # jpashop
-    JPA를 Spring boot에 적용하는 프로젝트  
-        - JPA
-        - Spring boot
-        - gradle
-        - lombok
-        - h2 db
-        - thymeleaf
+- JPA를 Spring boot에 적용하는 프로젝트  
+  - JPA
+  - Spring boot
+  - gradle
+  - lombok
+  - h2 db
+  - thymeleaf
 
-# jar에서 테스트 진행
+# jar 파일 테스트 진행
+```    
     \reactWorkspace\jpashop> ./gradlew clean build
     BUILD SUCCESSFUL in 43s
     8 actionable tasks: 8 executed
-    \reactWorkspace\jpashop\build> java -jar jpashop-0.0.1-SNAPSHOT.jar
-    JRE java 버전이 맞지 않으면 에러
+    \reactWorkspace\jpashop\build> java -jar jpashop-0.0.1-SNAPSHOT.jar    
+```
+- JRE java 버전이 맞지 않으면 에러
 
 #  remain query parameter log
-    기본 로그 추가(application.yml 파일)
+- 기본 로그 추가(application.yml 파일)
     logging:
         level:
             org.hibernate:
                 sql: debug # 로그 수준 지정
                 type: trace # parameter 정보 표시
-    외부 라이브러리 적용
-    spring-boot-data-source-decorator library 사용
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0' //부트에 미리 입력된 라이브러리가 아니라 버전 연결
-    운영에서는 성능 저하의 원인이 될수있으므로 꼭 체크
+- 외부 라이브러리 적용
+- spring-boot-data-source-decorator library 사용
+> implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0' //부트에 미리 입력된 라이브러리가 아니라 버전 연결
+- 운영에서는 성능 저하의 원인이 될수있으므로 꼭 체크
 
 # Getter와 Setter에 대하여
-    Getter는 사용하지만 Setter를 마구 열어놓으면 유지보수의 입장에서 좋지않다.
-    꼭 필요한 경우 필요한 만큼의 비즈니스 메서드를 구현해 호출하도록 하는것이 좋음
-    어디서 어떻게 데이터를 변경시키는지 관리를 명확하게 하기위해서 Setter는 가급적 사용하지 않는다.
+- Getter는 사용하지만 Setter를 마구 열어놓으면 유지보수의 입장에서 좋지않다.
+- 꼭 필요한 경우 필요한 만큼의 비즈니스 메서드를 구현해 호출하도록 하는것이 좋음
+- 어디서 어떻게 데이터를 변경시키는지 관리를 명확하게 하기위해서 Setter는 가급적 사용하지 않는다.
 
 # ManyToMany
-    다:다의 양방향성 매핑은 성능, 유지 그 어떤 면으로 봤을때도 좋지 않다. 가능하면 1:다, 다:1을 단방향으로 설정해 사용하는 것을 권장
+- 다:다의 양방향성 매핑은 성능, 유지 그 어떤 면으로 봤을때도 좋지 않다. 
+- 가능하면 1:다, 다:1을 단방향으로 설정해 사용하는 것을 권장
 
 # 값 타입(VO)의 constructor
-    emutable하게 만드는 것이 좋으므로 Setter없이 하는 것을 권장. 
-    단 refresh, proxy를 사용하는 경우를 위해 기본 constructor를 protected로 사용(물론 public도 가능)
+- immutable하게 만드는 것이 좋으므로 Setter없이 하는 것을 권장. 
+- 단 refresh, proxy를 사용하는 경우를 위해 기본 constructor를 protected로 사용(물론 public도 가능)
     
-    ex) Address class
+- ex) Address class
+```java
         @Embeddable 
         @Getter //Setter없이 사용
         public class Address {
@@ -55,35 +59,40 @@
                 this.zipcode = zipcode;
             }
         }
+```
 
 # 학습을 위해 복잡한 기능 제외(필수)
-    - 로그인과 권한 관리 제외
-    - 파라미터 검증과 예외처리 단순화
-    - 상품은 도서만 진행
-    - 카테고리 사용 x
-    - 배송 정보 사용x
-    - 서비스, 레포지토리 계층 개발 > 테스트케이스 작성 > 웹 계층 적용
+- 로그인과 권한 관리 제외
+- 파라미터 검증과 예외처리 단순화
+- 상품은 도서만 진행
+- 카테고리 사용 x
+- 배송 정보 사용x
+- 서비스, 레포지토리 계층 개발 > 테스트케이스 작성 > 웹 계층 적용
 
 # 학습을 위한 아키텍처
+```
     controller > service > repository > db
                 > domain <
+```
 
 # 구조
-    jpabook.jpashop
+```yaml
+jpabook:
+    jpashop:
         domain : 엔티티가 모여있는 계층으로 모든 계층에서 사용
         exception : 예외처리
         api : 페이징 외 데이터처리
         controller, service, repository : 일반적 구조
+```
 
 # SQL과 JPQL
-     SQL  : DB의 table에 접근
-    JPQL : SQL과 거의 유사하나 Entity 객체에 대해 접근하는 것이 다름
+- SQL  : DB의 table에 접근
+- JPQL : SQL과 거의 유사하나 Entity 객체에 대해 접근하는 것이 다름
 ```java
         return em.createQuery("select m from Member m",Member.class)
                 .getResultList();
 ```
 ```java
-
         return em.createQuery("select m from Member m where m.name = :searchKey",Member.class)
                 .setParameter("searchKey",name)
                 .getResultList();
@@ -125,11 +134,11 @@
 # [JPA에서 동적쿼리는 어떻게 수행할 것인가](./notes/dynamicQuery.md)
 
 # @Transactional
-    - JPA에서 DB처리하는 serivce/command는 Transacational처리가 필수
-    - 두가지 어노테이션중 javax보다는 spring 사용 권장
-    - 데이터를 변경하지 않는 경우를 기본으로 readOnly 처리, 쓰는 경우 default인 readOnly false 처리
-    - 각 서비스의 기능에 따라 기능 제한 거는 것도 최적화에 도움 됨(조회 기능은 readOnly) : 리소스 소모를 줄일 수 있음
-    - 검증 로직이 서버단에 있더라도 다중 접속과 처리 상황이 있을 수 있으므로 검증이 필요한 경우 unique 처리 
+- JPA에서 DB처리하는 serivce/command는 Transacational처리가 필수
+- 두가지 어노테이션중 javax보다는 spring 사용 권장
+- 데이터를 변경하지 않는 경우를 기본으로 readOnly 처리, 쓰는 경우 default인 readOnly false 처리
+- 각 서비스의 기능에 따라 기능 제한 거는 것도 최적화에 도움 됨(조회 기능은 readOnly) : 리소스 소모를 줄일 수 있음
+- 검증 로직이 서버단에 있더라도 다중 접속과 처리 상황이 있을 수 있으므로 검증이 필요한 경우 unique 처리 
 
 # bean injection 방법(service, repository)
 JPA의 @PersistenceContext도 spring boot에서 @Autowired로 처리해줌(버전이 낮을 경우 안될 수 있음에 주의)
@@ -260,7 +269,7 @@ ex) order
         order.orderCancel();
     }
 ```
-    따로 변경 내역을 다시 적용, 지정할 필요가 없음(dirty check)
+- 따로 변경 내역을 다시 적용, 지정할 필요가 없음(dirty check)
 
 # Entity를 다루는 두가지 패턴: 
 양립 가능.
@@ -331,10 +340,10 @@ ex) [Order](src/main/java/jpabook/jpashop/domain/Order.java)
     에러화면을 다시 작성하지 않고 타임리프가 적용하는 에러화면을 표시
 
 # Entity와 DTO 구별..
-    view를 처리할 Object와 핵심 비지니스 로직은 구별할 필요가 있다.
-    최대한 서로 오염되지 않도록 따로 작성하는 것을 권장한다. 
-    화면에서 받는 경우, 비즈니스 로직을 처리하는 경우, 화면에 보내는 경우를 구별하는 것이 좋다. 
-    특히 API를 개발할때는 절대 Entity를 반환해서는 안된다. 
+- view를 처리할 Object와 핵심 비지니스 로직은 구별할 필요가 있다.
+- 최대한 서로 오염되지 않도록 따로 작성하는 것을 권장한다. 
+- 화면에서 받는 경우, 비즈니스 로직을 처리하는 경우, 화면에 보내는 경우를 구별하는 것이 좋다. 
+- 특히 API를 개발할때는 절대 Entity를 반환해서는 안된다. 
 
 # 중요!! JPA에서 수정처리하기(변경 감지와 병합)
 - id값이 조작될 수 있으므로 이에대한 보안 준비도 필요함
@@ -403,14 +412,11 @@ mergedItem은 영속성 엔티티, item은 여전히 준영속 엔티티
     }
 ```
 ### 왜 병합(merge)이 아닌 변경감지인가?
-```asciidoc
-    물론 merge가 더 편하다. 하지만 병합되는 필드중 값이 없는 필드는 null로 처리된다. 
-    원하는 속성만 선택해서 변경할 수 있는 변경감지 방식과 달리 
-    모든 필드를 업데이트 시켜야만하는 병합(merge)은 데이터의 소실을 야기할 수 있으므로 주의해야한다.
-    개발자의 실수로 필드가 누락되면 데이터 소실이 발생생할 수 있어 위험하다.
-    추가적으로 설정할 수 있으나 가독성, 안정성을 고민하면 merge보다는 변경감지가 권장된다. 
-```
-
+- 물론 merge가 더 편하다. 하지만 병합되는 필드중 값이 없는 필드는 null로 처리된다. 
+- 원하는 속성만 선택해서 변경할 수 있는 변경감지 방식과 달리 
+- 모든 필드를 업데이트 시켜야만하는 병합(merge)은 데이터의 소실을 야기할 수 있으므로 주의해야한다.
+- 개발자의 실수로 필드가 누락되면 데이터 소실이 발생생할 수 있어 위험하다.
+- 추가적으로 설정할 수 있으나 가독성, 안정성을 고민하면 merge보다는 변경감지가 권장된다. 
 ### set을 사용하기보다는 변경감지를 처리할 method를 만들어 추적하도록 하는 것이 권장된다. 
 setter를 쓰기보다 의미있는 method를 만들어 가능한 추적이 쉽도록만드는 것을 권장
 ```java
